@@ -1,11 +1,39 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const multer = require('multer');
+var _storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+  	//if(파일의 형식이 이미지면){
+  		//cb(null, 'uploads/images');
+  	//}else if(파일의 형식이 텍스트면)
+  		//cb(null, 'uploads/texts');
+    cb(null, 'uploads/')
+  },
+  filename: function (req, file, cb) {
+  	//if(파일이 이미 존재한다면){
+ 		//cb(null, file.originalname에 동일 이름의 파일 중에 가장 큰 숫자를 입력)	
+  	//}else{
+  		//cb(null, file.originalname);
+  	//}
+    cb(null, file.originalname)
+  }
+})
+var upload = multer({ storage: _storage });
 const fs = require('fs');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));//미들웨어가 가로챈다.
 app.locals.pretty = true;
+//유저가 올린 파일을 보게 하려면
+app.use('/user', express.static('uploads')); 
 app.set('views', './views_file');
 app.set('view engine', 'pug');
+app.get('/upload', function(req, res){
+	res.render('upload');
+});
+app.post('/upload', upload.single('userfile'), function(req, res){
+	console.log(req.file);
+	res.send('Uploaded: '+req.file.filename);
+});
 app.get('/topic/new', function(req, res){
 	fs.readdir('data', function(err, files){
 		if(err){
