@@ -1,0 +1,25 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "practice",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "pug": "^2.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DaSolPark/nodejs_start.git"
+  },
+  "author": "DasolPark",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DaSolPark/nodejs_start/issues"
+  },
+  "homepage": "https://github.com/DaSolPark/nodejs_start#readme"
+}
