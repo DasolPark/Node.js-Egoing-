@@ -1,25 +1,23 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const multer = require('multer');
-var _storage = multer.diskStorage({
+const _storage = multer.diskStorage({
   destination: function (req, file, cb) {
-  	//if(파일의 형식이 이미지면){
-  		//cb(null, 'uploads/images');
-  	//}else if(파일의 형식이 텍스트면)
-  		//cb(null, 'uploads/texts');
     cb(null, 'uploads/')
   },
   filename: function (req, file, cb) {
-  	//if(파일이 이미 존재한다면){
- 		//cb(null, file.originalname에 동일 이름의 파일 중에 가장 큰 숫자를 입력)	
-  	//}else{
-  		//cb(null, file.originalname);
-  	//}
     cb(null, file.originalname)
   }
 })
-var upload = multer({ storage: _storage });
+const upload = multer({ storage: _storage });
 const fs = require('fs');
+const mysql = require('mysql');
+const mysql = mysql.createCennection({
+	host	: 'localhost',
+	user 	: 'root',
+	password: '',
+	database: 'o2'
+});
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));//미들웨어가 가로챈다.
 app.locals.pretty = true;
