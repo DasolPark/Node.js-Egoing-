@@ -2,9 +2,6 @@ var express = require('express');
 var session = require('express-session');//메모리에만 저장
 var FileStore = require('session-file-store')(session);//express-session에 의존한다는 의미
 var bodyParser = require('body-parser');
-var bkfd2Password = require("pbkdf2-password");
-var hasher = bkfd2Password();
-
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(session({
@@ -47,48 +44,32 @@ app.post('/auth/login', function(req, res){
 	var pwd = req.body.password;
 	for(var i=0; i<users.length; i++){
 		var user = users[i];
-		if(uname === user.username){
-			return hasher({password:pwd, salt: user.salt}, function(err, pass, salt, hash){
-				if(hash === user.password){
-					req.session.displayName = user.displayName;//session으로 굽는다
-					req.session.save(function(){
-						res.redirect('/welcome');
-					});
-				} else {
-					res.send('Who are you? <a href="/auth/login">login</a>');
-				}
+		if(uname === user.username && pwd === user.password){
+			req.session.displayName = user.displayName;//세션 dpn에 user.dpn을 저장
+			return req.session.save(function(){//세션이 안전하게 저장된 것을 확인한 후에 실행
+				res.redirect('/welcome');//redirect만으로는 이 반복문이 멈추지 않음 그래서 return 추가				
 			});
-		}
-		//if(uname === user.username && sha256(pwd,) === user.password){
-		//	req.session.displayName = user.displayName;//세션 dpn에 user.dpn을 저장
-		//	return req.session.save(function(){//세션이 안전하게 저장된 것을 확인한 후에 실행
-		//		res.redirect('/welcome');//redirect만으로는 이 반복문이 멈추지 않음 그래서 return 추가				
-		//	});
-		//} 
+		} 
 	}
 	res.send('Who are you? <a href="/auth/login">login</a>');
 });
-var users = [//비밀번호 111111로 했음
+var users = [
 	{
 		username: 'egoing',
-		password: 'oGyGyN7iLuv4DqEvJ/kLMSS2M50ednsLA+MFrhGLYYBzyqY/LOEkcNRzU812pe6ht+3w7RkKp+vHAjQpeg6K3RVHDS2gHblB8X+F/i1xgSOcbe2xXUnqHnV+2JYEq1mhpS1iWDZwYIT1PYNjZeyYOJN4A6s6oTIXRTibNrVi4VQ=',
-		salt:'mvFaptKoXVqPxkwzMnlDF04PRfBY9rabSx2J/hGaWta98fK8CVDb2VKXodsiAKyFx6yDD1kM8rz7YTup0FGj1Q==',
+		password: '111',
 		displayName:'Egoing'
 	}
 ];
 app.post('/auth/register', function(req, res){
-	hasher({password: req.body.password}, function(err, pass, salt, hash){
-		var user = {//k8805, 1234, K5
-			username: req.body.username,
-			password: hash,
-			salt: salt,
-			displayName: req.body.displayName
-		};
-		users.push(user);//실제로 구현할 때는 같은 아이디 중복을 제거해야함
-		req.session.displayName = req.body.displayName;
-		req.session.save(function(){
-			res.redirect('/welcome');
-		});
+	var user = {
+		username: req.body.username,
+		password: req.body.password,
+		displayName: req.body.displayName
+	};
+	users.push(user);//실제로 구현할 때는 같은 아이디 중복을 제거해야함
+	req.session.displayName = req.body.displayName;
+	req.session.save(function(){
+		res.redirect('/welcome');
 	});
 });
 app.get('/auth/register', function(req, res){
