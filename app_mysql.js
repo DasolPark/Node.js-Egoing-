@@ -12,12 +12,13 @@ const _storage = multer.diskStorage({
 const upload = multer({ storage: _storage });
 const fs = require('fs');
 const mysql = require('mysql');
-const mysql = mysql.createCennection({
+const conn = mysql.createConnection({
 	host	: 'localhost',
 	user 	: 'root',
 	password: '',
 	database: 'o2'
 });
+conn.connect();
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));//미들웨어가 가로챈다.
 app.locals.pretty = true;
