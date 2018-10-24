@@ -3,10 +3,9 @@ var session = require('express-session');//메모리에만 저장
 var FileStore = require('session-file-store')(session);//express-session에 의존한다는 의미
 var bodyParser = require('body-parser');
 var bkfd2Password = require("pbkdf2-password");
+var hasher = bkfd2Password();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var FacebookStrategy = require('passport-facebook').Strategy;
-var hasher = bkfd2Password();
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false}));
@@ -83,18 +82,6 @@ passport.use(new LocalStrategy(
 		done(null, false);
 	}
 ));
-passport.use(new FacebookStrategy({
-    clientID: '277743539519773',
-    clientSecret: FACEBOOK_APP_SECRET,
-    callbackURL: "http://www.example.com/auth/facebook/callback"
-  },
-  function(accessToken, refreshToken, profile, done) {
-    User.findOrCreate(..., function(err, user) {
-      if (err) { return done(err); }
-      done(null, user);
-    });
-  }
-));
 app.post(
 	'/auth/login', 
   passport.authenticate(//passport.authenticate라는 미들웨어를 통해서 로그인
@@ -105,12 +92,6 @@ app.post(
       failureFlash: false//로그인에 실패하면 딱 한 번만 보여주는 메시지(flash로 했을 때)
     }
   )
-);
-app.get(
-	'/auth/facebook', 
-	passport.authenticate(
-		'facebook'
-	)
 );
 var users = [//비밀번호 111111로 했음
 	{
@@ -171,7 +152,6 @@ app.get('/auth/login', function(req, res){
 			<input type="submit">
 		</p>
 	</form>
-	<a href="/auth/facebook">facebook</a>
 	`;
 	res.send(output);
 });//p태그를 이용하는 이유는 줄바꿈을 하기 위해서

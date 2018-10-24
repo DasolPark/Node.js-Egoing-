@@ -16,6 +16,7 @@
     "node-mysql": "^0.4.2",
     "npm": "^6.4.1",
     "passport": "^0.4.0",
+    "passport-facebook": "^2.1.1",
     "passport-local": "^1.0.0",
     "pbkdf2-password": "^1.2.1",
     "pug": "^2.0.3",
