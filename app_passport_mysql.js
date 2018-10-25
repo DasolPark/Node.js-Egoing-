@@ -3,9 +3,11 @@ var session = require('express-session');//메모리에만 저장
 var MySQLStore = require('express-mysql-session')(session);
 var bodyParser = require('body-parser');
 var bkfd2Password = require("pbkdf2-password");
-var hasher = bkfd2Password();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var FacebookStrategy = require('passport-facebook').Strategy;
+var hasher = bkfd2Password();
+
 const mysql = require('mysql');
 const conn = mysql.createConnection({
 	host	: 'localhost',
@@ -103,47 +105,39 @@ passport.use(new LocalStrategy(
 		});
 	}
 ));
-app.post(
-	'/auth/login', 
-  passport.authenticate(//passport.authenticate라는 미들웨어를 통해서 로그인
-  	'local', //local strategy가 실행된다는 의미
-  	{ //위의 new LocalStrategy가 실행
-  		successRedirect: '/welcome',
-      failureRedirect: '/auth/login',//원래는 아래 who are you였음
-      failureFlash: false//로그인에 실패하면 딱 한 번만 보여주는 메시지(flash로 했을 때)
-    }
-  )
-);
-app.post('/auth/register', function(req, res){
-	hasher({password: req.body.password}, function(err, pass, salt, hash){
-		var user = {
-			authId:'local:'+req.body.username,
-			username: req.body.username,
-			password: hash,
-			salt: salt,
-			displayName: req.body.displayName
-		};
-		var sql = 'INSERT INTO users SET ?';
-		conn.query(sql, user, function(err, results){//users테이블에 행이 추가되면 콜백 실행
-			if(err){
-				console.log(err);
-				res.status(500);
-			} else {
-				req.login(user, function(err){
-					req.session.save(function(){
-						res.redirect('/welcome');
-					});//회원가입이 되고 바로 로그인되어 사용할 수 있도록 구현
-				});
-			}
-		});
-	});
-});
-app.get('/auth/register', function(req, res){
-	res.send('auth/register');
-});
-app.get('/auth/login', function(req, res){
-	res.render('auth/login');
-});//p태그를 이용하는 이유는 줄바꿈을 하기 위해서
+passport.use(new FacebookStrategy({
+    clientID: '277743539519773',
+    clientSecret: '23228d7e4ecdba916cb22b1e891b6e71',
+    callbackURL: "/auth/facebook/callback",
+    profileFields: ['id', 'email', 'gender', 'link', 'locale', 
+    'name', 'timezone', 'updated_time', 'verified', 'displayName']
+  },
+  function(accessToken, refreshToken, profile, done) {
+  	console.log(profile);//어떤 정보가 있는지 아는게 중요
+  	var authId = 'facebook: '+profile.id;
+  	var sql = 'SELECT * FROM users WHERE authId=?';
+  	conn.query(sql, [authId], function(err, results){
+  		if(results.length > 0){//있다면 results값은 0보다 큼
+  			done(null, results[0]);
+  		} else {
+  			var newuser = {//users에 사용자가 없을 때 push
+  				'authId': authId,//local의 username과 다르게 authId임
+  				'displayName': profile.displayName,
+  				'email': profile.emails[0].value
+  			};
+  			var sql = 'INSERT INTO users SET ?';
+  			conn.query(sql, newuser, function(err, results){
+  				if(err){
+  					console.log(err);
+  					done('Error');
+  				} else {
+  					done(null, newuser);
+  				}
+  			});
+  		}
+  	});  	
+  }
+));
 app.listen(3003, function(){
 	console.log('Connected 3003 port!!!');
 });

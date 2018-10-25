@@ -3,9 +3,11 @@ var session = require('express-session');//메모리에만 저장
 var MySQLStore = require('express-mysql-session')(session);
 var bodyParser = require('body-parser');
 var bkfd2Password = require("pbkdf2-password");
-var hasher = bkfd2Password();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var FacebookStrategy = require('passport-facebook').Strategy;
+var hasher = bkfd2Password();
+
 const mysql = require('mysql');
 const conn = mysql.createConnection({
 	host	: 'localhost',
@@ -101,6 +103,35 @@ passport.use(new LocalStrategy(
 		});
 	}
 ));
+passport.use(new FacebookStrategy({
+    clientID: '277743539519773',
+    clientSecret: '23228d7e4ecdba916cb22b1e891b6e71',
+    callbackURL: "/auth/facebook/callback",
+    profileFields: ['id', 'email', 'gender', 'link', 'locale', 
+    'name', 'timezone', 'updated_time', 'verified', 'displayName']
+  },
+  function(accessToken, refreshToken, profile, done) {
+  	console.log(profile);//어떤 정보가 있는지 아는게 중요
+  	var authId = 'facebook: '+profile.id;
+  	for(var i=0; i<users.length; i++){//이미 사용자가 있는지 확인
+  		var user = users[i];
+  		if(user.authId === authId){//facebook 인증일 때는 authId가 있음
+  			return done(null, user);//user에는 사용자 정보가 들어있음
+  		}
+  	}
+  	var newuser = {//users에 사용자가 없을 때 push
+  		'authId': authId,//local의 username과 다르게 authId임
+  		'displayName': profile.displayName,
+  		'email': profile.emails[0].value
+  	};
+  	users.push(newuser);
+  	done(null, newuser);
+  //   User.findOrCreate(..., function(err, user) {
+  //     if (err) { return done(err); }
+  //     done(null, user);
+  //   });
+  }
+));
 app.post(
 	'/auth/login', 
   passport.authenticate(//passport.authenticate라는 미들웨어를 통해서 로그인
@@ -110,6 +141,22 @@ app.post(
       failureRedirect: '/auth/login',//원래는 아래 who are you였음
       failureFlash: false//로그인에 실패하면 딱 한 번만 보여주는 메시지(flash로 했을 때)
     }
+  )
+);
+app.get(
+	'/auth/facebook', //첫 번째 왕복
+	passport.authenticate(
+		'facebook',
+		{scope: 'email'}
+	)
+);//라우트가 2개임(타사 인증) 
+app.get('/auth/facebook/callback',//두 번째 왕복
+  passport.authenticate(
+  	'facebook', 
+  	{ 
+  		successRedirect: '/welcome',
+  	  failureRedirect: '/auth/login'
+  	}
   )
 );
 app.post('/auth/register', function(req, res){
@@ -170,6 +217,7 @@ app.get('/auth/login', function(req, res){
 			<input type="submit">
 		</p>
 	</form>
+	<a href="/auth/facebook">facebook</a>
 	`;
 	res.send(output);
 });//p태그를 이용하는 이유는 줄바꿈을 하기 위해서
