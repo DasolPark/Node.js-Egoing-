@@ -1,7 +1,7 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const multer = require('multer');
-const _storage = multer.diskStorage({
+var express = require('express');
+var bodyParser = require('body-parser');
+var multer = require('multer');
+var _storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/')
   },
@@ -9,22 +9,22 @@ const _storage = multer.diskStorage({
     cb(null, file.originalname)
   }
 })
-const upload = multer({ storage: _storage });
-const fs = require('fs');
-const mysql = require('mysql');
-const conn = mysql.createConnection({
+var upload = multer({ storage: _storage });
+var fs = require('fs');
+var mysql = require('mysql');
+var conn = mysql.createConnection({
 	host	: 'localhost',
 	user 	: 'root',
 	password: '111111',
 	database: 'o2'
 });
 conn.connect();
-const app = express();
+var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));//미들웨어가 가로챈다.
 app.locals.pretty = true;
 //유저가 올린 파일을 보게 하려면
 app.use('/user', express.static('uploads')); 
-app.set('views', './views/mysql');
+app.set('views', './views_mysql');
 app.set('view engine', 'pug');
 app.get('/upload', function(req, res){
 	res.render('topic/upload');
@@ -120,21 +120,9 @@ app.post('/topic/:id/delete', function(req ,res){
 });
 app.get(['/topic', '/topic/:id'], function(req, res){
 	var sql = 'SELECT id, title FROM topic';
-	conn.query(sql, function(err, topics, fields){
-		var id = req.params.id;
-		if(id){
-			var sql = 'SELECT * FROM topic WHERE id=?';
-			conn.query(sql, [id], function(err, topic, fields){
-				if(err){
-					console.log(err);
-					res.status(500).send('Internal Server Error');
-				} else {
-					res.render('topic/view', {topics: topics, topic: topic[0]});
-				}
-			});
-		} else {
-			res.render('topic/view', {topics: topics});
-		}
+	conn.query(sql, function(err, topics, fields){//fields는 사실 없어도 됨(topics는 원래 rows)
+		res.send(topics);//이렇게 쓰면 [object]가 3개 나옴
+		res.render('view', {topics: topics});//topics는 원래 files였음(원래는 파일을 읽어왔으니까)
 	});
 });
 app.listen(3000, function(){
