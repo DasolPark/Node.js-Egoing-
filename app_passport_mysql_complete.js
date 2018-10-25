@@ -16,8 +16,6 @@ const conn = mysql.createConnection({
 conn.connect();
 
 var app = express();
-app.set('views', './views/mysql');
-app.set('view engine', 'pug');
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(session({
   secret: '1234SADF@#%fdjgkl',//session id를 심을 때, 키같은 것
@@ -139,10 +137,41 @@ app.post('/auth/register', function(req, res){
 	});
 });
 app.get('/auth/register', function(req, res){
-	res.send('auth/register');
+	var output = `
+	<h1>Register</h1>
+	<form action="/auth/register" method="post">
+		<p>
+			<input type="text" name="username" placeholder="username">
+		</p>
+		<p>
+			<input type="password" name="password" placeholder="password">
+		</p>
+		<p>
+			<input type="text" name="displayName" placeholder="displayName">
+		</p>
+		<p>
+			<input type="submit">
+		</p>
+	</form>
+	`;
+	res.send(output);
 });
 app.get('/auth/login', function(req, res){
-	res.render('auth/login');
+	var output = `
+	<h1>Login</h1>
+	<form action="/auth/login" method="post">
+		<p>
+			<input type="text" name="username" placeholder="username">
+		</p>
+		<p>
+			<input type="password" name="password" placeholder="password">
+		</p>
+		<p>
+			<input type="submit">
+		</p>
+	</form>
+	`;
+	res.send(output);
 });//p태그를 이용하는 이유는 줄바꿈을 하기 위해서
 app.listen(3003, function(){
 	console.log('Connected 3003 port!!!');
