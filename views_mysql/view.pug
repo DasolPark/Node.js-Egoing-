@@ -11,10 +11,17 @@ html
           a(href='/topic/'+topic.id)= topic.title
     artcle
       if topic
-        h2= title
-        = description
+        h2= topic.title
+        = topic.description
+        div= 'by '+topic.author
       else
         h2 Welcome
         | This is server side JavaScript tutorial.
-    div
-      a(href='/topic/new') New
+    ul
+      li
+        a(href='/topic/add') add
+      if topic
+        li
+          a(href='/topic/'+topic.id+'/edit') edit
+        li
+          a(href='/topic/'+topic.id+'/delete') delete

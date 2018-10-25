@@ -9,7 +9,7 @@ var conn = mysql.createConnection({
 conn.connect();
 /*
 var sql = "SELECT * FROM topic";
-conn.query(sql, function(err, rows, fields){
+conn.query(sql, function(err, rows, fields){//fields는 컬럼에 대한 상세한 정보가 들어있음
 	if(err){
 		console.log(err);
 	}else{
