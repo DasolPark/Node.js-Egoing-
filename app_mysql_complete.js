@@ -23,8 +23,8 @@ var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));//미들웨어가 가로챈다.
 app.locals.pretty = true;
 //유저가 올린 파일을 보게 하려면
-app.use('/user', express.static('uploads'));
-app.set('views', './views/mysql');
+app.use('/user', express.static('uploads')); 
+app.set('views', './views_mysql');
 app.set('view engine', 'pug');
 app.get('/upload', function(req, res){
 	res.render('topic/upload');
@@ -39,7 +39,7 @@ app.get('/topic/add', function(req, res){//new에서 add로 변경
 			console.log(err);
 			res.status(500).send('Internal Server Error');
 		}
-		res.render('topic/add', {topics: topics});
+		res.render('add', {topics: topics});
 	});
 });
 app.post('/topic/add', function(req, res){
@@ -70,13 +70,13 @@ app.get(['/topic/:id/edit'], function(req, res){
 					console.log(err);
 					res.status(500).send('Internal Server Error');
 				} else {
-					res.render('topic/edit', {topics: topics, topic: topic[0]})//topic[0]을 한 이유는 id=?에서 한 가지 값에 매치된 것을 가져올 것이니까
+					res.render('edit', {topics: topics, topic: topic[0]})//topic[0]을 한 이유는 id=?에서 한 가지 값에 매치된 것을 가져올 것이니까
 				}
 			});
 		} else {
 			console.log(err);
 			res.status(500).send('Internal Server Error');
-		}
+		} 
 	});
 });
 app.post(['/topic/:id/edit'], function(req, res){
@@ -110,7 +110,7 @@ app.get(['/topic/:id/delete'], function(req, res){
 					res.status(500).send('Internal Server Error');
 				}
 				// res.send(topic);
-				res.render('topic/delete', {topics: topics, topic: topic[0]});
+				res.render('delete', {topics: topics, topic: topic[0]});
 			}
 		});
 	});
@@ -135,11 +135,11 @@ app.get(['/topic', '/topic/:id'], function(req, res){
 					console.log(err);
 					res.status(500).send('Internal Server Error');
 				} else {
-					res.render('topic/view', {topics: topics, topic: topic[0]})//topic[0]을 한 이유는 id=?에서 한 가지 값에 매치된 것을 가져올 것이니까
+					res.render('view', {topics: topics, topic: topic[0]})//topic[0]을 한 이유는 id=?에서 한 가지 값에 매치된 것을 가져올 것이니까
 				}
 			});
 		} else {
-			res.render('topic/view', {topics: topics});//topics는 원래 files였음(원래는 파일을 읽어왔으니까)
+			res.render('view', {topics: topics});//topics는 원래 files였음(원래는 파일을 읽어왔으니까)
 		}
 	});
 });
