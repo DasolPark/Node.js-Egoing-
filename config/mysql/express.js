@@ -1,5 +1,4 @@
 module.exports = function(){
-
   var express = require('express');
   var session = require('express-session');//메모리에만 저장
   var MySQLStore = require('express-mysql-session')(session);
@@ -21,6 +20,6 @@ module.exports = function(){
       database: 'o2'
     })
   }));
-  
+
   return app;
 }
